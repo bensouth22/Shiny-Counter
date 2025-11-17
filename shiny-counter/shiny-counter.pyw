@@ -6,6 +6,8 @@ import pathlib
 
 # utility functions
 
+# load in dex from txt as a dict
+# TODO: make sure dex is up to date
 def load_pokedex(filename="pokedex.txt"):
     pokedex = {}
     with open(filename, "r") as f:
@@ -14,12 +16,19 @@ def load_pokedex(filename="pokedex.txt"):
             pokedex[key.lower()] = val
     return pokedex
 
+# calculate odds that a shiny would have been found after a given amount of encounters i.e.:
+# x = 1 - (1 - P) ** n
+# where P is the odds for a single encounter and n is the total number of encounters
 def calc_shiny_probability(encounters, odds = False):
     if odds:
         return round(100 * (1 - (1 - 1 / 4096) ** encounters), 3)
     else:
         return round(100 * (1 - (1 - 1 / 8192) ** encounters), 3)
 
+# fetch sprite png from showdown
+# sprites are 96 x 96 by default
+# defaults to gen 4 and 5 sprites 
+# TODO: add option to select generation in preferences
 def fetch_shiny_sprite(pokemon, pokedex):
     if pokemon not in pokedex:
         return "unknown.png"
@@ -43,6 +52,7 @@ def fetch_shiny_sprite(pokemon, pokedex):
 
     return shiny_filename
 
+# load user preferences from txt
 def load_preferences(filename="preferences.txt"):
     try:
         with open(filename, "r") as f:
@@ -51,6 +61,7 @@ def load_preferences(filename="preferences.txt"):
     except FileNotFoundError:
         return ["0", "unknown", "False", "False", "False"]
 
+# save user preferences in a txt
 def save_preferences(values, filename="preferences.txt"):
     with open(filename, "w") as f:
         for value in values:
@@ -116,13 +127,15 @@ def update_ui():
     n = int(count_label.text())
     bi_prob.setText(f"{calc_shiny_probability(n, odds_box.isChecked())}%")
 
+# update sprite to mon specified in preferences
 def update_sprite():
     global pokemon
     pokemon = pokemon_box.text().lower()
     sprite_file = fetch_shiny_sprite(pokemon, pokedex)
-    pixmap = QPixmap(sprite_file).scaled(128, 128, QtCore.Qt.KeepAspectRatio)
+    pixmap = QPixmap(sprite_file).scaled(192, 192, QtCore.Qt.KeepAspectRatio)
     image_label.setPixmap(pixmap)
 
+# update window properties (i.e. frameless and always on top)
 def apply_window_flags():
     flags = QtCore.Qt.Widget
     if top_box.isChecked():
@@ -133,6 +146,8 @@ def apply_window_flags():
     settings.setWindowFlags(flags)
     window.show()
 
+# take user input in preferences and saves them
+# calls save_preferences to write to preferences to txt
 def on_save_clicked():
     values = [
         encounters_box.text(),
@@ -148,21 +163,25 @@ def on_save_clicked():
     apply_window_flags()
     settings.hide()
 
+# show the settings menu
 def on_settings_clicked():
     encounters_box.setText(count_label.text())
     settings.show()
 
+# increase total encounters by 1
 def increment_count():
     count = int(count_label.text()) + 1
     count_label.setText(str(count))
     update_ui()
 
+# decrease total encounters by 1
 def decrement_count():
     count = int(count_label.text())
     if count > 0:
         count_label.setText(str(count - 1))
         update_ui()
 
+# save preferences on exit
 def on_exit():
     preferences = load_preferences()
     preferences[0] = count_label.text()
