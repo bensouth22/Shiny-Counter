@@ -90,7 +90,7 @@ title_box.setChecked(no_title)
 
 # load sprite
 sprite_file = fetch_shiny_sprite(pokemon, pokedex)
-pixmap = QPixmap(sprite_file).scaled(128, 128, QtCore.Qt.KeepAspectRatio)
+pixmap = QPixmap(sprite_file).scaled(192, 192, QtCore.Qt.KeepAspectRatio)
 image_label.setPixmap(pixmap)
 
 # icons
